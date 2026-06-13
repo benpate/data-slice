@@ -44,7 +44,7 @@ func ApplyOptions[T Comparer[T]](value []T, options ...option.Option) []T {
 	for _, opt := range options {
 		if _, ok := opt.(option.FirstRowOption); ok {
 			if len(value) > 0 {
-				value = value[1:]
+				value = value[:1]
 			}
 			break
 		}
