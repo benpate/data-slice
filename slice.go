@@ -33,7 +33,7 @@ func ApplyOptions[T Comparer[T]](value []T, options ...option.Option) []T {
 	// Apply MaxRows option (if present)
 	for _, opt := range options {
 		if typed, ok := opt.(option.MaxRowsOption); ok {
-			if maxRows := typed.MaxRows(); maxRows < int64(len(value)) {
+			if maxRows := typed.MaxRows(); 0 <= maxRows && maxRows < int64(len(value)) {
 				value = value[:maxRows]
 			}
 			break

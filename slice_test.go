@@ -186,6 +186,21 @@ func TestApplyOptions_MaxRowsZero(t *testing.T) {
 	assert.Empty(t, result)
 }
 
+func TestApplyOptions_MaxRowsNegative(t *testing.T) {
+
+	// A negative MaxRows is out of range and must be ignored rather than
+	// panicking on a `value[:negative]` reslice.
+	value := []testRecord{
+		{Name: "alice"},
+		{Name: "bob"},
+	}
+
+	result := ApplyOptions(value, option.MaxRows(-1))
+
+	require.Len(t, result, 2)
+	assert.Equal(t, []string{"alice", "bob"}, names(result))
+}
+
 func TestApplyOptions_FirstRow(t *testing.T) {
 
 	// FirstRow keeps only the first record in the slice.
