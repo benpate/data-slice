@@ -1,3 +1,4 @@
+// Package dataslice applies query options (sorting and row limits) to in-memory slices.
 package dataslice
 
 import (
@@ -6,10 +7,14 @@ import (
 	"github.com/benpate/data/option"
 )
 
+// Comparer is implemented by types that can order themselves against a peer by field name.
 type Comparer[T any] interface {
 	Compare(fieldName string, other T) int
 }
 
+// ApplyOptions sorts and trims value according to the supplied options. It mutates value in
+// place and returns a sub-slice of the same backing array, so callers needing an independent
+// copy must make one.
 func ApplyOptions[T Comparer[T]](value []T, options ...option.Option) []T {
 
 	// Try to sort the items in the slice based on the sort criteria
