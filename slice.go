@@ -46,6 +46,7 @@ func ApplyOptions[T Comparer[T]](value []T, options ...option.Option) []T {
 	}
 
 	// Apply FirstRow option (if present)
+	// which should return only the first row of the result set
 	for _, opt := range options {
 		if _, ok := opt.(option.FirstRowOption); ok {
 			if len(value) > 0 {
