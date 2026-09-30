@@ -175,7 +175,8 @@ func TestApplyOptions_MaxRowsGreaterThanLength(t *testing.T) {
 
 func TestApplyOptions_MaxRowsZero(t *testing.T) {
 
-	// MaxRows of zero truncates the slice down to nothing.
+	// MaxRows of zero means "no limit", matching data-mongo and the zero value
+	// of MaxRowsOption. Use FirstRow to ask for a single row instead.
 	value := []testRecord{
 		{Name: "alice"},
 		{Name: "bob"},
@@ -183,13 +184,14 @@ func TestApplyOptions_MaxRowsZero(t *testing.T) {
 
 	result := ApplyOptions(value, option.MaxRows(0))
 
-	assert.Empty(t, result)
+	require.Len(t, result, 2)
+	assert.Equal(t, []string{"alice", "bob"}, names(result))
 }
 
 func TestApplyOptions_MaxRowsNegative(t *testing.T) {
 
-	// A negative MaxRows is out of range and must be ignored rather than
-	// panicking on a `value[:negative]` reslice.
+	// A negative MaxRows is clamped to zero by the option package, so it reads
+	// as "no limit" rather than panicking on a `value[:negative]` reslice.
 	value := []testRecord{
 		{Name: "alice"},
 		{Name: "bob"},

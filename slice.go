@@ -21,15 +21,19 @@ func ApplyOptions[T Comparer[T]](value []T, options ...option.Option) []T {
 	for _, opt := range options {
 		if typed, ok := opt.(option.SortOption); ok {
 
-			if typed.Direction == option.SortDirectionAscending {
+			// RULE: Branch on IsDescending, never on the raw Direction field.
+			// Direction is exported and unvalidated, so an unrecognized value
+			// (or the empty string of a zero-value SortOption) must sort
+			// ASCENDING here, the same way data-mongo and data-mock read it.
+			if typed.IsDescending() {
 				slices.SortFunc(value, func(a T, b T) int {
-					return a.Compare(typed.FieldName, b)
+					return b.Compare(typed.FieldName, a)
 				})
 				break
 			}
 
 			slices.SortFunc(value, func(a T, b T) int {
-				return b.Compare(typed.FieldName, a)
+				return a.Compare(typed.FieldName, b)
 			})
 			break
 		}
@@ -38,7 +42,10 @@ func ApplyOptions[T Comparer[T]](value []T, options ...option.Option) []T {
 	// Apply MaxRows option (if present)
 	for _, opt := range options {
 		if typed, ok := opt.(option.MaxRowsOption); ok {
-			if maxRows := typed.MaxRows(); 0 <= maxRows && maxRows < int64(len(value)) {
+			// RULE: Zero means "no limit", matching data-mongo and the zero value
+			// of MaxRowsOption. The option package clamps negatives to zero, so
+			// this guard also covers them.
+			if maxRows := typed.MaxRows(); 0 < maxRows && maxRows < int64(len(value)) {
 				value = value[:maxRows]
 			}
 			break
